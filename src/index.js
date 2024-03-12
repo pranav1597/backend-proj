@@ -19,7 +19,7 @@ connectDB()
     });
 
     app.on("error", (e) => {
-                console.log("ERRR: ", error);
+                console.log("ERR: ", error);
                 throw error
     })
 })
