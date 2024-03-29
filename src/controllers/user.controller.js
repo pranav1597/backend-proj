@@ -11,7 +11,7 @@ const registerUser = asyncHandler( async (req, res) => {
     // check for images , check for avatar
     // upload them to cloudinary, check avatar
     // create user object = create entry in db
-    // remove password anf refresh token field from response
+    // remove password and refresh token field from response
     // check for user creation
 
 
@@ -24,17 +24,17 @@ const registerUser = asyncHandler( async (req, res) => {
             throw new ApiError(400, "All fields are required")
         }
     
-    const existedUser = User.findOne({
+    const existedUser = await User.findOne({
         $or: [ {username} , {email} ]
     })
     
-    console.log(existedUser)
     
     if(existedUser){
         throw new ApiError(409, "User with username or password already exists")
     }
     
     const avatarLocalPath = req.files?.avatar[0]?.path
+    console.log("avatarLocalPath", avatarLocalPath)
     const coverImagePath = req.files?.coverImage[0]?.path
     
     if(!avatarLocalPath){
@@ -42,6 +42,7 @@ const registerUser = asyncHandler( async (req, res) => {
     }
     
     const avatar = await uploadOnCloudinary(avatarLocalPath)
+    console.log("Avatar ", avatar)
     const coverImage = await uploadOnCloudinary(coverImagePath)
     
     if(!avatar){
