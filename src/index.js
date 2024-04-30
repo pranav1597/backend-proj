@@ -44,7 +44,7 @@ connectDB()
 //     try{
 //        await mongoose.connect(`${process.env.MONGODB_URL}/${DB_NAME}`)
 //        app.on("error", (e) => {
-//         console.log("ERRR: ", error);
+//         console.log("ERR: ", error);
 //         throw error
 //        })
 //        app.listen(process.env.PORT, ()=> {
