@@ -116,8 +116,9 @@ const loginUser = asyncHandler(async (req, res) => {
     // access & refresh token
     // cookies
 
-    const {email, username} = req.body
-   
+    const {email, username, password} = req.body
+   console.log(req.body)
+
     if(!email && !username) {
         throw new ApiError(400, "username or email is required")
     }
@@ -128,6 +129,12 @@ const loginUser = asyncHandler(async (req, res) => {
 
     if(!user){
         throw new ApiError(404, "User doesn't exists")
+    }
+
+    const isValidPassword = await user.isPasswordCorrect(password)
+
+    if(!isValidPassword){
+        throw new ApiError(404, "Invalid user credentials")
     }
 
     const {accessToken, refreshToken} = await generateAccessandRefreshToken(user._id)
@@ -253,9 +260,10 @@ const changeCurrentPassword = asyncHandler(async(req,res) => {
 })
 
 const getCurrentUser = asyncHandler(async(req,res) => {
+    // console.log(res)
     return res
     .status(200)
-    .json(200, req.user, "Curremt user fetched successfully")
+    .json(200, req.user, "Current user fetched successfully")
 })
 
 const updateAccountDetails = asyncHandler(async(req,res) => {
@@ -283,16 +291,18 @@ const updateAccountDetails = asyncHandler(async(req,res) => {
 
 const updateUserAvatar = asyncHandler(async (req, res) => {
     const avatarLocalPath = req.file?.path
-
+    console.log(avatarLocalPath)
     if(!avatarLocalPath){
         throw new ApiError(400, "Avatar file is missing")
 
     }
 
     const avatar = await uploadOnCloudinary(avatarLocalPath)
+    console.log("avatar ",avatar)
+    console.log("avatar url ",avatar.url)
 
     if(!avatar.url) {
-        throw new ApiError(400, "Error while uploading on avatr")
+        throw new ApiError(400, "Error while uploading on avatar")
     }
 
     const user = await User.findByIdAndUpdate(
@@ -306,6 +316,8 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
             new : true
         }
     ).select("-password")
+
+    console.log("User ", user)
 
     return res
     .status(200)
@@ -423,7 +435,7 @@ const getWatchHistory = asyncHandler(async(req,res) => {
     const user = await User.aggregate([
         {
             $match: {
-                _id: new mongoose.Types.ObjectId.createFromBase64(req.user._id)
+                _id: new mongoose.Types.ObjectId(req.user._id)
             }
         },
         {
